@@ -1,27 +1,48 @@
 import React, { useState } from "react";
 
-import { sample } from "../../helpers/utils";
-import { WORDS } from "../../helpers/data";
+import GameInput from "@components/GameInput";
+import GuessResults from "@components/GuessResults";
+import WonBanner from "@components/WonBanner";
+import LostBanner from "@components/LostBanner";
+import Keyboard from "@components/Keyboard";
 
-import GameInput from "../GameInput";
-import GuessResults from "../GuessResults";
+import { sample } from "@helpers/utils";
+import { WORDS } from "@helpers/data";
+import { checkGuess } from "@helpers/game-helper";
 
-// Pick a random word on every pageload.
-const answer = sample(WORDS);
-// To make debugging easier, we'll log the solution in the console.
-console.info({ answer });
+import { NUM_OF_GUESSES_ALLOWED } from "@helpers/constants";
 
 function Game() {
+  const [answer, setAnswer] = useState(sample(WORDS));
+  console.log({ answer });
+  // running | won | lost
+  const [gameStatus, setGameStatus] = useState("running");
   const [guessList, setGuessList] = useState([]);
 
   function handleSubmitGuess(guess) {
-    setGuessList([...guessList, guess]);
+    const nextGuessList = [...guessList, guess];
+    setGuessList(nextGuessList);
+
+    if (guess === answer) setGameStatus("won");
+    if (nextGuessList.length >= NUM_OF_GUESSES_ALLOWED) setGameStatus("lost");
   }
+
+  function handleRestart() {
+    const newWord = sample(WORDS);
+    setAnswer(newWord);
+    setGuessList([]);
+    setGameStatus("running");
+  }
+
+  const validatedGuesses = guessList.map((guess) => checkGuess(guess, answer));
 
   return (
     <>
-      <GuessResults guessList={guessList} />
-      <GameInput handleSubmitGuess={handleSubmitGuess} />
+      <GuessResults guessList={guessList} answer={answer} />
+      <GameInput handleSubmitGuess={handleSubmitGuess} gameStatus={gameStatus} />
+      {gameStatus === "won" && <WonBanner numOfGuesses={guessList.length} action={handleRestart} />}
+      {gameStatus === "lost" && <LostBanner answer={answer} action={handleRestart}></LostBanner>}
+      <Keyboard validatedGuesses={validatedGuesses} />
     </>
   );
 }

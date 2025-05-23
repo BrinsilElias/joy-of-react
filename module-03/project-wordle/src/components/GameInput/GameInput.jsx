@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function GameInput({ handleSubmitGuess }) {
+function GameInput({ handleSubmitGuess, gameStatus }) {
   const [guess, setGuess] = useState("");
 
   return (
@@ -22,6 +22,7 @@ function GameInput({ handleSubmitGuess }) {
         maxLength={5}
         pattern="[a-zA-Z]{5}"
         required
+        disabled={gameStatus !== "running"}
         onChange={(evt) => setGuess(evt.target.value.toUpperCase())}
       />
     </form>
